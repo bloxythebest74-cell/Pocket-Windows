@@ -17,8 +17,16 @@ app.get("/health", (req, res) => {
 
 app.use(express.static(__dirname));
 
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
+app.use((req, res, next) => {
+    if (req.method !== "GET") {
+        return next();
+    }
+
+    res.sendFile(path.join(__dirname, "index.html"), (err) => {
+        if (err && !res.headersSent) {
+            res.status(err.statusCode || 500).send("Unable to load the website.");
+        }
+    });
 });
 
 app.listen(PORT, "0.0.0.0", () => {
